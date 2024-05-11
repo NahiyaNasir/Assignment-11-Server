@@ -7,6 +7,7 @@ const cors = require("cors");
 
 require("dotenv").config();
 const port = process.env.PORT || 5000;
+app.use(express.json());
 app.use(
     cors({
       origin:  
@@ -21,7 +22,7 @@ app.get('/', (req, res) => {
   })
 
   
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.gze7wpc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
  
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -38,7 +39,30 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+
+    const volunteerCollection=client.db('volunteerDB').collection('management')
+     app.get('/volunteer',async(req,res)=>{
+       const curser=volunteerCollection.find()
+       const result= await curser.toArray()
+       res.send(result)
+     })
+    //  create data
+   app.post('/volunteer',async(req,res)=>{
+    const newItem = req.body;
+    // console.log(newItem);
+      const result = await volunteerCollection.insertOne(newItem);
+       res.send(result)
+      // console.log(result);
+   })
+    //  get id for details
+   app.get("/volunteer/:id", async (req, res) => {
+    const id = req.params.id;
+    console.log(id);
+    const quarry = { _id: new ObjectId(id) };
+    const result = await volunteerCollection.findOne(quarry);
+    res.send(result);
+  })
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
