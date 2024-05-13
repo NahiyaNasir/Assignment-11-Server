@@ -8,19 +8,15 @@ const cors = require("cors");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
 app.use(express.json());
-app.use(
-    cors({
-      origin:  
-                       [
-       "http://localhost:5173",
-       "https://assigment-11-server-two.vercel.app"
-      ],
-      credentials: true,
-    })
-  );
-app.get('/', (req, res) => {
-    res.send('Hello World!')
-  })
+// const corsConfig = {
+//   origin: '',
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'DELETE']
+// }
+// app.use(cors(corsConfig))
+// app.options("", cors(corsConfig))
+app.use(cors())
+
 
   
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -48,8 +44,8 @@ async function run() {
        const result= await curser.toArray()
        res.send(result)
      })
-    //  for search
-    //  app.get('/volunteer',async(req,res)=>{
+    // //  for search
+    //  app.get('/volunteers',async(req,res)=>{
     //   const search=req.body.search
     //   console.log(search)
     //   let quarry={
@@ -72,10 +68,18 @@ async function run() {
    app.get("/volunteer/:id", async (req, res) => {
     const id = req.params.id;
     // console.log(id);
-    const quarry = { _id: new ObjectId(id) };
-    const result = await volunteerCollection.findOne(quarry);
+    const query = { _id: new ObjectId(id) };
+    const result = await volunteerCollection.findOne(query);
     res.send(result);
   })
+      //   get data by user email
+      app.get("/my-volunteer-email",async(req,res)=>{
+        const email=req.query.email
+        console.log(email)
+        const query={email:email}
+        const result=await volunteerCollection.find(query).toArray()
+        res.send(result)
+      })
   //   create new collection
     app.post('/requested',async(req,res)=>{
       const reqItem=req.body
@@ -85,6 +89,45 @@ async function run() {
       // const decreesResult=await volunteerCollection.updateOne({$inc:{ number:-1}})
       // res.send(decreesResult)
     })
+    //  get update data id
+     app.get("/single-volunteer-update/:id",async(req,res)=>{
+      const id = req.params.id;
+    console.log(id);
+    const query = { _id: new ObjectId(id) };
+    const result = await volunteerCollection.findOne(query);
+    res.send(result);
+     })
+      //  get data update
+      app.put('/single-volunteer-update/:id',async(req,res)=>{
+        const id = req.params.id;
+      console.log(id);
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateItem = req.body;
+      console.log(updateItem);
+      const item = {
+        $set: {
+          img: updateItem.img,
+         title:updateItem.title,
+         deadline:updateItem.deadline,
+         location:updateItem.location,
+         category:updateItem.category,
+         number:updateItem.number,
+                             desc: updateItem.desc,
+         
+        },
+      };
+      console.log(item);
+      const result = await volunteerCollection.updateOne(
+        filter,
+        item,
+        options
+      );
+      console.log(result);
+      res.send(result);
+      })
+
+      // data delete
 
     // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
@@ -94,7 +137,9 @@ async function run() {
   }
 }
 run().catch(console.dir);
-
+ app.get('/',async(req,res)=>{
+  res.send('hello')
+ })
   
   app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
