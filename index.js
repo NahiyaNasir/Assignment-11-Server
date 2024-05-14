@@ -79,23 +79,7 @@ async function run() {
       const result = await volunteerCollection.find(query).toArray();
       res.send(result);
     });
-    //   create new collection
-    app.post("/requested-volunteer", async (req, res) => {
-      const reqItem = req.body;
-      console.log(reqItem);
-      const result = await requestedCollection.insertOne(reqItem);
-      res.send(result);
-      // const decreesResult=await volunteerCollection.updateOne({$inc:{ number:-1}})
-      // res.send(decreesResult)
-    });
-    //  get all requested data by id
-    app.get('/requested-volunteer',async(req,res)=>{
-      const curser = volunteerCollection.find();
-      const result = await curser.toArray();
-      res.send(result);
-    })
-
-
+   
     //  get update data id
     app.get("/single-volunteer-update/:id", async (req, res) => {
       const id = req.params.id;
@@ -149,10 +133,42 @@ async function run() {
       // console.log(result);
     });
 
+ //   create new collection
+ app.post("/requested", async (req, res) => {
+  const reqItem = req.body;
+  console.log(reqItem);
+  const result = await requestedCollection.insertOne(reqItem);
+  res.send(result);
+  // const decreesResult=await volunteerCollection.updateOne({$inc:{ number:-1}})
+  // res.send(decreesResult)
+});
+//  get all requested data by  email
+app.get("/requested-volunteer-email", async (req, res) => {
+  const email = req.query.email;
+  console.log(email);
+  const query = { email: email };
+  const result = await requestedCollection.find(query).toArray();
+  res.send(result);
+});
+  //   delete form requested collection
+  app.get("/requested-volunteer-delete/:id",async(req,res)=>{
+    const id=req.params.id
+    const quarry={_id: new ObjectId(id)}
+    const result=await requestedCollection.findOne(quarry)
+    res.send(result)
+  })
+  app.delete("/requested-volunteer-delete/:id",async(req,res)=>{
+    const id = req.params.id;
+      // console.log(id);
+      const quarry = { _id: new ObjectId(id) };
+      const result = await requestedCollection.deleteOne(quarry);
+      res.send(result);
+  })
+
     // await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    // console.log(
+    //   "Pinged your deployment. You successfully connected to MongoDB!"
+    // );
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
